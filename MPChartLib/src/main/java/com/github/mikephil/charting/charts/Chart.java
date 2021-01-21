@@ -14,7 +14,6 @@ import android.graphics.Paint.Align;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore.Images;
 import androidx.annotation.RequiresApi;
@@ -26,7 +25,6 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 
 import com.github.mikephil.charting.animation.ChartAnimator;
-import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.animation.Easing.EasingFunction;
 import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.IMarker;
@@ -82,6 +80,11 @@ public abstract class Chart<T extends ChartData<? extends IDataSet<? extends Ent
      * Flag that indicates if highlighting per tap (touch) is enabled
      */
     protected boolean mHighLightPerTapEnabled = true;
+
+    /**
+     * Flag that indicates if highlighting can be deselected per tap
+     */
+    protected boolean mHighLightDeselectPerTapEnabled = true;
 
     /**
      * If set to true, chart continues to scroll after touch up
@@ -516,6 +519,23 @@ public abstract class Chart<T extends ChartData<? extends IDataSet<? extends Ent
      */
     public void setHighlightPerTapEnabled(boolean enabled) {
         mHighLightPerTapEnabled = enabled;
+    }
+
+    /**
+     * return true if highlighting can be deselected per tap, false if not
+     * @return
+     */
+    public boolean isHighLightDeselectPerTapEnabled() {
+        return mHighLightDeselectPerTapEnabled;
+    }
+
+    /**
+     * set this to false to prevent value hightlighting to be deselected per tap
+     * @param enable
+     *
+     */
+    public void setHighLightDeselectPerTapEnabled(boolean enable) {
+        mHighLightDeselectPerTapEnabled = enable;
     }
 
     /**
