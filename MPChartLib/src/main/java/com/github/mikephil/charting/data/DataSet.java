@@ -87,11 +87,48 @@ public abstract class DataSet<T extends Entry> extends BaseDataSet<T> {
 
         if (indexTo < indexFrom) return;
 
+        /*
         for (int i = indexFrom; i <= indexTo; i++) {
 
             // only recalculate y
             calcMinMaxY(mEntries.get(i));
         }
+        */
+        calcMinMaxYCustom(fromX, toX, mEntries.subList(indexFrom, indexTo + 1));
+    }
+
+    private void calcMinMaxYCustom(float fromX, float toX, List<T> entries) {
+        // Skip single entries outside the x range for the measures dataset
+        if (entries.size() == 1) {
+            T entry = entries.get(0);
+            if ((entry.getX() < fromX || entry.getX() > toX) && getLabel().equals("data")) return;
+        }
+
+        List<T> calcList = new ArrayList<>(entries);
+
+        // Replace first and last entries by computed ones for exact visible min/max x
+        int lastIndex = calcList.size() - 1;
+        if (calcList.size() > 1 && calcList.get(0).getX() < fromX) {
+            float y = getYValueForX(calcList.get(0), calcList.get(1), fromX);
+            calcList.remove(0);
+            calcList.add(0, (T) new Entry(fromX, y));
+        }
+        if (calcList.size() > 1 && calcList.get(lastIndex).getX() > toX) {
+            float y = getYValueForX(calcList.get(lastIndex - 1), calcList.get(lastIndex), toX);
+            calcList.remove(lastIndex);
+            calcList.add(lastIndex, (T) new Entry(toX, y));
+        }
+        // Compute yMin/yMax
+        for (T entry : calcList) {
+            calcMinMaxY((T) entry);
+        }
+    }
+
+    private float getYValueForX(Entry entry1, Entry entry2, float x) {
+        // straight line equation: y = mx + b
+        float m = (entry2.getY() - entry1.getY()) / (entry2.getX() - entry1.getX());
+        float b = entry1.getY() - (m * entry1.getX());
+        return (m * x) + b;
     }
 
     /**

@@ -94,9 +94,15 @@ public class LineChartRenderer extends LineRadarRenderer {
 
         LineData lineData = mChart.getLineData();
 
+        // Draw filled areas first
         for (ILineDataSet set : lineData.getDataSets()) {
+            if (set.isVisible() && set.isDrawFilledEnabled())
+                drawDataSet(c, set);
+        }
 
-            if (set.isVisible())
+        // Then draw lines above filled areas
+        for (ILineDataSet set : lineData.getDataSets()) {
+            if (set.isVisible() && !set.isDrawFilledEnabled())
                 drawDataSet(c, set);
         }
 
@@ -303,14 +309,18 @@ public class LineChartRenderer extends LineRadarRenderer {
 
         mRenderPaint.setStyle(Paint.Style.STROKE);
 
+        /*
         Canvas canvas = null;
-
         // if the data-set is dashed, draw on bitmap-canvas
         if (dataSet.isDashedLineEnabled()) {
             canvas = mBitmapCanvas;
         } else {
             canvas = c;
         }
+        */
+
+        // Always draw on canvas to avoid dashed lines to be drawn above other ones
+        Canvas canvas = c;
 
         mXBounds.set(mChart, dataSet);
 
