@@ -24,7 +24,8 @@ public class AnimatedZoomJob extends AnimatedViewPortJob implements Animator.Ani
         pool = ObjectPool.create(8, new AnimatedZoomJob(null,null,null,null,0,0,0,0,0,0,0,0,0,0));
     }
 
-    public static AnimatedZoomJob getInstance(ViewPortHandler viewPortHandler, View v, Transformer trans, YAxis axis, float xAxisRange, float scaleX, float scaleY, float xOrigin, float yOrigin, float zoomCenterX, float zoomCenterY, float zoomOriginX, float zoomOriginY, long duration) {
+    public static AnimatedZoomJob getInstance(ViewPortHandler viewPortHandler, View v, Transformer trans, YAxis axis, float xAxisRange, float scaleX, float scaleY, float xOrigin, float yOrigin, float zoomCenterX, float zoomCenterY, float zoomOriginX, float zoomOriginY, long duration)
+    {
         AnimatedZoomJob result = pool.get();
         result.mViewPortHandler = viewPortHandler;
         result.xValue = scaleX;
@@ -37,8 +38,13 @@ public class AnimatedZoomJob extends AnimatedViewPortJob implements Animator.Ani
         result.xAxisRange = xAxisRange;
         result.resetAnimator();
         result.animator.setDuration(duration);
+        result.zoomCenterX = zoomCenterX;
+        result.zoomCenterY = zoomCenterY;
+        result.zoomOriginX = zoomOriginX;
+        result.zoomOriginY = zoomOriginY;
         return result;
     }
+
 
     protected float zoomOriginX;
     protected float zoomOriginY;
