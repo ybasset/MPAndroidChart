@@ -98,10 +98,20 @@ public abstract class DataSet<T extends Entry> extends BaseDataSet<T> {
     }
 
     private void calcMinMaxYCustom(float fromX, float toX, List<T> entries) {
-        // Skip single entries outside the x range for the measures dataset
-        if (entries.size() == 1) {
-            T entry = entries.get(0);
-            if ((entry.getX() < fromX || entry.getX() > toX) && getLabel().equals("data")) return;
+        // Ignore some data
+        if (getLabel().equals("data")) {
+            if (entries.size() == 1) {
+                T entry = entries.get(0);
+                if (entry.getX() < fromX || entry.getX() > toX) {
+                    // Ignore single entries outside visible viewport
+                    return;
+                }
+            } else {
+                // Ignore "data" data set if it has more than one measure
+                // since it will be handled more properly with smoothed data set
+                // by avoiding straight line equations between 2 very distant points
+                return;
+            }
         }
 
         List<T> calcList = new ArrayList<>(entries);

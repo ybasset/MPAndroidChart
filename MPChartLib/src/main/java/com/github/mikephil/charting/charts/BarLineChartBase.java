@@ -58,6 +58,11 @@ public abstract class BarLineChartBase<T extends BarLineScatterCandleBubbleData<
     protected boolean mAutoScaleMinMaxEnabled = false;
 
     /**
+     * Value that indicates the minimum visible range if auto scaling on the y axis is enabled
+     */
+    protected float mAutoScaleMinRange = -1;
+
+    /**
      * flag that indicates if pinch-zoom is enabled. if true, both x and y axis
      * can be scaled with 2 fingers, if false, x and y axis can be scaled
      * separately
@@ -370,13 +375,33 @@ public abstract class BarLineChartBase<T extends BarLineScatterCandleBubbleData<
 
         // calculate axis range (min / max) according to provided data
 
-        if (mAxisLeft.isEnabled())
-            mAxisLeft.calculate(mData.getYMin(AxisDependency.LEFT),
-                    mData.getYMax(AxisDependency.LEFT));
+        if (mAxisLeft.isEnabled()) {
+            float yMin = mData.getYMin(AxisDependency.LEFT);
+            float yMax = mData.getYMax(AxisDependency.LEFT);
+            if (mAutoScaleMinRange != -1) {
+                float range = yMax - yMin;
+                if (range < mAutoScaleMinRange) {
+                    float margin = (mAutoScaleMinRange - range) / 2f;
+                    yMin -= margin;
+                    yMax += margin;
+                }
+            }
+            mAxisLeft.calculate(yMin, yMax);
+        }
 
-        if (mAxisRight.isEnabled())
-            mAxisRight.calculate(mData.getYMin(AxisDependency.RIGHT),
-                    mData.getYMax(AxisDependency.RIGHT));
+        if (mAxisRight.isEnabled()) {
+            float yMin = mData.getYMin(AxisDependency.RIGHT);
+            float yMax = mData.getYMax(AxisDependency.RIGHT);
+            if (mAutoScaleMinRange != -1) {
+                float range = yMax - yMin;
+                if (range < mAutoScaleMinRange) {
+                    float margin = (mAutoScaleMinRange - range) / 2f;
+                    yMin -= margin;
+                    yMax += margin;
+                }
+            }
+            mAxisRight.calculate(yMin, yMax);
+        }
 
         calculateOffsets();
     }
