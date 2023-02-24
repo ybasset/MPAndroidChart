@@ -1638,6 +1638,15 @@ public abstract class BarLineChartBase<T extends BarLineScatterCandleBubbleData<
     }
 
     /**
+     * Flag that indicates if the minimum visible y range if auto scaling on the y axis is enabled.
+     *
+     * @param range the minimum y axis range
+     */
+    public void setAutoScaleMinRange(float range) {
+        mAutoScaleMinRange = range;
+    }
+
+    /**
      * @return true if auto scaling on the y axis is enabled.
      * @default false
      */
