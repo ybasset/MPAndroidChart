@@ -1,5 +1,7 @@
 package com.github.mikephil.charting.listener;
 
+import static java.lang.Float.min;
+
 import android.annotation.SuppressLint;
 import android.graphics.Matrix;
 import android.graphics.PointF;
@@ -38,6 +40,7 @@ public class BarLineChartTouchListener extends ChartTouchListener<BarLineChartBa
      * matrix for saving the original matrix state
      */
     private Matrix mSavedMatrix = new Matrix();
+    private float[] mSavedMatrixBuff = new float[9];
 
     /**
      * point where the touch action started
@@ -301,6 +304,8 @@ public class BarLineChartTouchListener extends ChartTouchListener<BarLineChartBa
     private void saveTouchStart(MotionEvent event) {
 
         mSavedMatrix.set(mMatrix);
+        mSavedMatrix.getValues(mSavedMatrixBuff);
+
         mTouchStartPoint.x = event.getX();
         mTouchStartPoint.y = event.getY();
 
@@ -363,6 +368,9 @@ public class BarLineChartTouchListener extends ChartTouchListener<BarLineChartBa
                     mLastGesture = ChartGesture.PINCH_ZOOM;
 
                     float scale = totalDist / mSavedDist; // total scale
+                    // Compute max scale factor to go from initial gesture scale to max scale
+                    float maxScaleFactorX = h.getMaxScaleX() / mSavedMatrixBuff[Matrix.MSCALE_X];
+                    float maxScaleFactorY = h.getMaxScaleY() / mSavedMatrixBuff[Matrix.MSCALE_Y];
 
                     boolean isZoomingOut = (scale < 1);
 
@@ -374,13 +382,35 @@ public class BarLineChartTouchListener extends ChartTouchListener<BarLineChartBa
                             h.canZoomOutMoreY() :
                             h.canZoomInMoreY();
 
-                    float scaleX = (mChart.isScaleXEnabled()) ? scale : 1f;
-                    float scaleY = (mChart.isScaleYEnabled()) ? scale : 1f;
+                    boolean setScaleX = mChart.isScaleXEnabled() && canZoomMoreX;
+                    boolean setScaleY = mChart.isScaleYEnabled() && canZoomMoreY;
 
-                    if (canZoomMoreY || canZoomMoreX) {
+                    if (setScaleX || setScaleY) {
+                        float scaleX = setScaleX ? min(scale, maxScaleFactorX) : 1f;
+                        float scaleY = setScaleY ? min(scale, maxScaleFactorY) : 1f;
 
                         mMatrix.set(mSavedMatrix);
                         mMatrix.postScale(scaleX, scaleY, t.x, t.y);
+
+                        // Fix max zoom translation shaking bug
+                        // When applying max scale factor to matrix,
+                        // precision makes the result not exactly max Scale.
+                        // So set it precisely to avoid further matrix modifications.
+                        boolean isMaxScaleX = setScaleX && scale > maxScaleFactorX;
+                        boolean isMaxScaleY = setScaleY && scale > maxScaleFactorY;
+                        if (isMaxScaleX || isMaxScaleY) {
+                            float[] matrixBuffer = new float[9];
+                            if (isMaxScaleX) {
+                                mMatrix.getValues(matrixBuffer);
+                                matrixBuffer[Matrix.MSCALE_X] = h.getMaxScaleX();
+                                mMatrix.setValues(matrixBuffer);
+                            }
+                            if (isMaxScaleY) {
+                                mMatrix.getValues(matrixBuffer);
+                                matrixBuffer[Matrix.MSCALE_Y] = h.getMaxScaleY();
+                                mMatrix.setValues(matrixBuffer);
+                            }
+                        }
 
                         if (l != null)
                             l.onChartScale(event, scaleX, scaleY);
